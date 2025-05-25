@@ -70,12 +70,16 @@ class TracksPowerSwitch(EXCSEntity, SwitchEntity):
     def __init__(self, client: EXCommandStationClient) -> None:
         """Initialize the switch."""
         super().__init__(client)
+
+        # Set entity properties
         self._attr_name = "Tracks Power"
         self.entity_description = SwitchEntityDescription(
             key="tracks_power",
             icon="mdi:power",
         )
         self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
+
+        # Set initial state based on the client's initial tracks state
         self._attr_is_on = client.initial_tracks_state
 
     @callback
@@ -113,12 +117,15 @@ class TurnoutSwitch(EXCSEntity, SwitchEntity):
         """Initialize the switch."""
         super().__init__(client)
         self._turnout = turnout
+
+        # Set entity properties
         self._attr_name = turnout.description
         self.entity_description = SwitchEntityDescription(
             key=f"turnout_{turnout.id}",
             icon="mdi:source-branch",
         )
         self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
+
         # Assuming THROWN means the switch is on
         self._attr_is_on = turnout.state == TurnoutState.THROWN
 
@@ -170,15 +177,14 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
 
         # Set entity properties
         self._attr_name = function.label
-        self._attr_unique_id = (
-            f"{client.entry_id}_loco_{loco.id}_function_{function.id}"
-        )
-        self._attr_is_on = function.state
-
         self.entity_description = SwitchEntityDescription(
             key=f"function_{loco.id}_{function.id}",
             icon=get_function_icon(function.label),  # Set icon based on function label
         )
+        self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
+
+        # Set initial state based on function state
+        self._attr_is_on = function.state
 
     @callback
     def _handle_coordinator_update(self) -> None:
