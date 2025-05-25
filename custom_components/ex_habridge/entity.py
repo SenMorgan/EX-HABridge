@@ -48,8 +48,8 @@ class EXCSEntity(Entity):
     @callback
     def _handle_push(self, message: str) -> None:
         """Handle incoming messages from the EX-CommandStation."""
-        # This method should be overridden in subclasses to handle specific messages
-        raise NotImplementedError
+        # This method could be overridden in subclasses to handle specific messages
+        pass
 
     @callback
     def _on_connect(self) -> None:
@@ -71,8 +71,15 @@ class EXCSEntity(Entity):
             self._client.register_signal_handler(
                 SIGNAL_DISCONNECTED, self._on_disconnect
             ),
-            self._client.register_signal_handler(SIGNAL_DATA_PUSHED, self._handle_push),
         ]
+
+        # Only register SIGNAL_DATA_PUSHED if _handle_push is overridden
+        if self.__class__._handle_push is not EXCSEntity._handle_push:
+            self._unsub_callbacks.append(
+                self._client.register_signal_handler(
+                    SIGNAL_DATA_PUSHED, self._handle_push
+                )
+            )
 
     async def async_will_remove_from_hass(self) -> None:
         """Unregister callbacks."""
