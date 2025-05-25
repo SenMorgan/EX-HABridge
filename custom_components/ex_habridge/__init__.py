@@ -35,18 +35,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     host = entry.data[CONF_HOST]
     port = entry.data[CONF_PORT]
 
-    client = EXCommandStationClient(hass, host, port, entry.entry_id)
-
     try:
+        client = EXCommandStationClient(hass, host, port, entry.entry_id)
         await client.async_setup()
     except (EXCSConnectionError, TimeoutError) as err:
-        await client.async_shutdown()
+        if client:
+            await client.async_shutdown()
         raise ConfigEntryNotReady from err
     except EXCSVersionError as err:
-        await client.async_shutdown()
+        if client:
+            await client.async_shutdown()
         raise ConfigEntryError from err
     except EXCSError as err:
-        await client.async_shutdown()
+        if client:
+            await client.async_shutdown()
         msg = f"Unexpected error: {err}"
         raise ConfigEntryError(msg) from err
 
@@ -98,7 +100,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_shutdown()
 
     # Disconnect client
-    await client.async_shutdown()
+    if client:
+        await client.async_shutdown()
 
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
