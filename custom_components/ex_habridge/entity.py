@@ -13,7 +13,6 @@ from .const import (
     DOMAIN,
     LOGGER,
     SIGNAL_CONNECTED,
-    SIGNAL_DATA_PUSHED,
     SIGNAL_DISCONNECTED,
 )
 from .coordinator import LocoUpdateCoordinator
