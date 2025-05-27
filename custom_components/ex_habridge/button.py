@@ -35,7 +35,11 @@ async def async_setup_entry(
     )
 
 
-class EXCSRebootButton(EXCSEntity, ButtonEntity):
+class EXCSButtonEntity(EXCSEntity, ButtonEntity):
+    """Base class for EX-CommandStation button entities."""
+
+
+class EXCSRebootButton(EXCSButtonEntity, ButtonEntity):
     """Representation of the EX-CommandStation reboot button."""
 
     def __init__(self, client: EXCommandStationClient) -> None:
@@ -58,7 +62,7 @@ class EXCSRebootButton(EXCSEntity, ButtonEntity):
             LOGGER.exception("Failed to reboot EX-CommandStation")
 
 
-class EXCSEmergencyStopButton(EXCSEntity, ButtonEntity):
+class EXCSEmergencyStopButton(EXCSButtonEntity, ButtonEntity):
     """Representation of the EX-CommandStation emergency stop button."""
 
     def __init__(self, client: EXCommandStationClient) -> None:

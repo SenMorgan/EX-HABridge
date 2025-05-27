@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import callback
 
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, SIGNAL_DATA_PUSHED
 from .entity import EXCSEntity, EXCSRosterEntity
 from .icons_helper import get_function_icon
 from .roster import LocoFunction, LocoFunctionCmd, RosterEntry
@@ -64,7 +64,23 @@ async def async_setup_entry(
         async_add_entities(function_switches)
 
 
-class TracksPowerSwitch(EXCSEntity, SwitchEntity):
+class EXCSSwitchEntity(EXCSEntity, SwitchEntity):
+    """Base class for EX-CommandStation switch entities."""
+
+    @callback
+    def _handle_push(self, message: str) -> None:
+        """Abstract method to handle incoming messages from the EX-CommandStation."""
+        raise NotImplementedError
+
+    async def async_added_to_hass(self) -> None:
+        """Register data push callbacks."""
+        await super().async_added_to_hass()
+        self._unsub_callbacks.append(
+            self._client.register_signal_handler(SIGNAL_DATA_PUSHED, self._handle_push)
+        )
+
+
+class TracksPowerSwitch(EXCSSwitchEntity, SwitchEntity):
     """Representation of the EX-CommandStation tracks power switch."""
 
     def __init__(self, client: EXCommandStationClient) -> None:
@@ -110,7 +126,7 @@ class TracksPowerSwitch(EXCSEntity, SwitchEntity):
             LOGGER.exception("Failed to turn OFF tracks power")
 
 
-class TurnoutSwitch(EXCSEntity, SwitchEntity):
+class TurnoutSwitch(EXCSSwitchEntity, SwitchEntity):
     """Representation of a turnout switch."""
 
     def __init__(self, client: EXCommandStationClient, turnout: EXCSTurnout) -> None:
