@@ -15,7 +15,7 @@ from .const import (
     SIGNAL_DISCONNECTED,
 )
 from .excs_exceptions import EXCSError
-from .roster import RosterEntry
+from .roster import EXCSRosterEntry
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -23,11 +23,11 @@ if TYPE_CHECKING:
     from .excs_client import EXCSClient
 
 
-class LocoUpdateCoordinator(DataUpdateCoordinator[RosterEntry]):
+class LocoUpdateCoordinator(DataUpdateCoordinator[EXCSRosterEntry]):
     """Class to manage throttle updates for a locomotive."""
 
     def __init__(
-        self, hass: HomeAssistant, client: EXCSClient, loco: RosterEntry
+        self, hass: HomeAssistant, client: EXCSClient, loco: EXCSRosterEntry
     ) -> None:
         """Initialize the locomotive update coordinator."""
         super().__init__(

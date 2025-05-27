@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from .const import LOGGER
 from .excs_exceptions import EXCSConnectionError, EXCSError
-from .roster import RosterConsts, RosterEntry
+from .roster import EXCSRosterConsts, EXCSRosterEntry
 
 if TYPE_CHECKING:
     from .excs_base import EXCSBaseClient
@@ -18,9 +18,9 @@ class EXCSRosterManager:
     def __init__(self, client: EXCSBaseClient) -> None:
         """Initialize the roster manager with the EX-CommandStation client."""
         self.client = client
-        self.entries: list[RosterEntry] = []
+        self.entries: list[EXCSRosterEntry] = []
 
-    async def get_roster_entries(self) -> list[RosterEntry]:
+    async def get_roster_entries(self) -> list[EXCSRosterEntry]:
         """Request and return list of roster entries from the EX-CommandStation."""
         if not self.client.connected:
             msg = "Not connected to EX-CommandStation"
@@ -58,10 +58,10 @@ class EXCSRosterManager:
         """Get the list of roster entry IDs from the EX-CommandStation."""
         try:
             response = await self.client.await_command_response(
-                RosterConsts.CMD_LIST_ROSTER_ENTRIES,
-                RosterConsts.RESP_LIST_PREFIX,
+                EXCSRosterConsts.CMD_LIST_ROSTER_ENTRIES,
+                EXCSRosterConsts.RESP_LIST_PREFIX,
             )
-            return RosterEntry.parse_roster_ids(response)
+            return EXCSRosterEntry.parse_roster_ids(response)
         except TimeoutError:
             msg = "Timeout waiting for roster list response"
             LOGGER.error(msg)
@@ -73,14 +73,14 @@ class EXCSRosterManager:
             LOGGER.exception("Unexpected error while getting roster list")
             raise
 
-    async def _get_roster_entry_details(self, roster_id: str) -> RosterEntry:
+    async def _get_roster_entry_details(self, roster_id: str) -> EXCSRosterEntry:
         """Get details for a specific roster entry ID."""
         try:
             response = await self.client.await_command_response(
-                RosterConsts.CMD_GET_ROSTER_DETAILS_FMT.format(cab_id=roster_id),
-                RosterConsts.RESP_DETAILS_PREFIX_FMT.format(cab_id=roster_id),
+                EXCSRosterConsts.CMD_GET_ROSTER_DETAILS_FMT.format(cab_id=roster_id),
+                EXCSRosterConsts.RESP_DETAILS_PREFIX_FMT.format(cab_id=roster_id),
             )
-            return RosterEntry.from_detail_response(response)
+            return EXCSRosterEntry.from_detail_response(response)
         except TimeoutError:
             msg = f"Timeout waiting for roster details for ID {roster_id}"
             LOGGER.error(msg)

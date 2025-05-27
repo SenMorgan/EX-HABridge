@@ -10,7 +10,7 @@ from homeassistant.core import callback
 from .const import DOMAIN, LOGGER, SIGNAL_DATA_PUSHED
 from .entity import EXCSEntity, EXCSRosterEntity
 from .icons_helper import get_function_icon
-from .roster import LocoFunction, LocoFunctionCmd, RosterEntry
+from .roster import EXCSLocoFunction, EXCSLocoFunctionCmd, EXCSRosterEntry
 from .turnout import EXCSTurnout, EXCSTurnoutState
 
 if TYPE_CHECKING:
@@ -188,8 +188,8 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
         self,
         client: EXCSClient,
         coordinator: LocoUpdateCoordinator,
-        loco: RosterEntry,
-        function: LocoFunction,
+        loco: EXCSRosterEntry,
+        function: EXCSLocoFunction,
     ) -> None:
         """Initialize the switch."""
         super().__init__(client, coordinator, loco)
@@ -220,7 +220,9 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
         """Turn on the function."""
         try:
             await self._client.send_command(
-                self._loco.toggle_function_cmd(self._function_id, LocoFunctionCmd.ON)
+                self._loco.toggle_function_cmd(
+                    self._function_id, EXCSLocoFunctionCmd.ON
+                )
             )
         except EXCSError:
             # Handle the error if needed
@@ -234,7 +236,9 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
         """Turn off the function."""
         try:
             await self._client.send_command(
-                self._loco.toggle_function_cmd(self._function_id, LocoFunctionCmd.OFF)
+                self._loco.toggle_function_cmd(
+                    self._function_id, EXCSLocoFunctionCmd.OFF
+                )
             )
         except EXCSError:
             # Handle the error if needed

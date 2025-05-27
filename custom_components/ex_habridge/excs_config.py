@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
     from homeassistant.core import HomeAssistant
 
-    from .roster import RosterEntry
+    from .roster import EXCSRosterEntry
     from .turnout import EXCSTurnout
 
 
@@ -66,7 +66,7 @@ class EXCSConfigClient(EXCSBaseClient):
         return self.turnouts_manager.turnouts
 
     @property
-    def roster_entries(self) -> list[RosterEntry]:
+    def roster_entries(self) -> list[EXCSRosterEntry]:
         """Return the list of roster entries."""
         return self.roster_manager.entries
 
