@@ -21,12 +21,14 @@ from .excs_exceptions import (
     EXCSVersionError,
 )
 from .roster import RosterConsts, RosterEntry
-from .turnout import EXCSTurnout, EXCSTurnoutConsts
+from .turnouts_manager import EXCSTurnoutsManager
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from homeassistant.core import HomeAssistant
+
+    from .turnout import EXCSTurnout
 
 
 @dataclass
@@ -53,14 +55,23 @@ class EXCSConfigClient(EXCSBaseClient):
         """Initialize the configuration client."""
         super().__init__(hass, host, port, entry_id)
         self.system_info = EXCSSystemInfo()
-        self.turnouts: list[EXCSTurnout] = []
+        self.turnouts_manager = EXCSTurnoutsManager(self)
         self.roster_entries: list[RosterEntry] = []
         self.initial_tracks_state: bool = False
+
+    @property
+    def turnouts(self) -> list[EXCSTurnout]:
+        """Return the list of turnouts."""
+        return self.turnouts_manager.turnouts
 
     @classmethod
     def parse_version(cls, version_str: str) -> tuple[int, ...]:
         """Parse a version string into a tuple of integers."""
         return tuple(int(part) for part in version_str.split("."))
+
+    async def get_turnouts(self) -> None:
+        """Request the list of turnouts from the EX-CommandStation."""
+        await self.turnouts_manager.get_turnouts()
 
     async def _create_initial_tracks_state_handler(self) -> None:
         """Create a one-time signal handler for the initial tracks state."""
@@ -146,73 +157,6 @@ class EXCSConfigClient(EXCSBaseClient):
             )
             LOGGER.error(msg)
             raise EXCSVersionError(msg)
-
-    async def get_turnouts(self) -> None:
-        """Request the list of turnouts from the EX-CommandStation."""
-        if not self.connected:
-            msg = "Not connected to EX-CommandStation"
-            raise EXCSConnectionError(msg)
-
-        LOGGER.debug("Requesting list of turnouts from EX-CommandStation")
-
-        # Clear existing turnouts
-        self.turnouts.clear()
-
-        # Get list of turnout IDs
-        turnout_ids = await self._get_turnouts_list()
-
-        if not turnout_ids:
-            LOGGER.debug("No turnouts found")
-            return
-
-        LOGGER.debug("Found turnout IDs: %s", " ".join(turnout_ids))
-
-        # Get details for each turnout ID
-        for turnout_id in turnout_ids:
-            turnout = await self._get_turnout_details(turnout_id)
-            self.turnouts.append(turnout)
-            # Print representation of the turnout
-            LOGGER.debug("Turnout detail: %s", turnout)
-
-    async def _get_turnouts_list(self) -> list[str]:
-        """Get the list of turnout IDs from the EX-CommandStation."""
-        try:
-            response = await self.await_command_response(
-                EXCSTurnoutConsts.CMD_LIST_TURNOUTS,
-                EXCSTurnoutConsts.RESP_LIST_PREFIX,
-            )
-            return EXCSTurnout.parse_turnout_ids(response)
-        except TimeoutError:
-            msg = "Timeout waiting for turnout list response"
-            LOGGER.error(msg)
-            raise EXCSConnectionError(msg) from None
-        except EXCSError as err:
-            LOGGER.error("Error getting turnout list: %s", err)
-            raise
-        except Exception:
-            LOGGER.exception("Unexpected error while getting turnout list")
-            raise
-
-    async def _get_turnout_details(self, turnout_id: str) -> EXCSTurnout:
-        """Get details for a specific turnout ID."""
-        try:
-            response = await self.await_command_response(
-                EXCSTurnoutConsts.CMD_GET_TURNOUT_DETAILS_FMT.format(id=turnout_id),
-                EXCSTurnoutConsts.RESP_DETAILS_PREFIX_FMT.format(id=turnout_id),
-            )
-            return EXCSTurnout.from_detail_response(response)
-        except TimeoutError:
-            msg = f"Timeout waiting for turnout details for ID {turnout_id}"
-            LOGGER.error(msg)
-            raise EXCSConnectionError(msg) from None
-        except EXCSError as err:
-            LOGGER.error("Error getting turnout detail: %s", err)
-            raise
-        except Exception:
-            LOGGER.exception(
-                "Unexpected error while getting turnout details for ID %s", turnout_id
-            )
-            raise
 
     async def get_roster_entries(self) -> None:
         """Request the list of roster entries from the EX-CommandStation."""
