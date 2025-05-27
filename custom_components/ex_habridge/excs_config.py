@@ -20,7 +20,7 @@ from .excs_exceptions import (
     EXCSInvalidResponseError,
     EXCSVersionError,
 )
-from .roster import RosterConsts, RosterEntry
+from .roster_manager import EXCSRosterManager
 from .turnouts_manager import EXCSTurnoutsManager
 
 if TYPE_CHECKING:
@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
     from homeassistant.core import HomeAssistant
 
+    from .roster import RosterEntry
     from .turnout import EXCSTurnout
 
 
@@ -56,13 +57,18 @@ class EXCSConfigClient(EXCSBaseClient):
         super().__init__(hass, host, port, entry_id)
         self.system_info = EXCSSystemInfo()
         self.turnouts_manager = EXCSTurnoutsManager(self)
-        self.roster_entries: list[RosterEntry] = []
+        self.roster_manager = EXCSRosterManager(self)
         self.initial_tracks_state: bool = False
 
     @property
     def turnouts(self) -> list[EXCSTurnout]:
         """Return the list of turnouts."""
         return self.turnouts_manager.turnouts
+
+    @property
+    def roster_entries(self) -> list[RosterEntry]:
+        """Return the list of roster entries."""
+        return self.roster_manager.entries
 
     @classmethod
     def parse_version(cls, version_str: str) -> tuple[int, ...]:
@@ -72,6 +78,10 @@ class EXCSConfigClient(EXCSBaseClient):
     async def get_turnouts(self) -> None:
         """Request the list of turnouts from the EX-CommandStation."""
         await self.turnouts_manager.get_turnouts()
+
+    async def get_roster_entries(self) -> None:
+        """Request the list of roster entries from the EX-CommandStation."""
+        await self.roster_manager.get_roster_entries()
 
     async def _create_initial_tracks_state_handler(self) -> None:
         """Create a one-time signal handler for the initial tracks state."""
@@ -157,77 +167,3 @@ class EXCSConfigClient(EXCSBaseClient):
             )
             LOGGER.error(msg)
             raise EXCSVersionError(msg)
-
-    async def get_roster_entries(self) -> None:
-        """Request the list of roster entries from the EX-CommandStation."""
-        if not self.connected:
-            msg = "Not connected to EX-CommandStation"
-            raise EXCSConnectionError(msg)
-
-        LOGGER.debug("Requesting list of roster entries from EX-CommandStation")
-
-        # Clear existing roster entries
-        self.roster_entries.clear()
-
-        # Get list of roster entry IDs
-        roster_ids = await self._get_roster_ids()
-
-        if not roster_ids:
-            LOGGER.debug("No roster entries found")
-            return
-
-        LOGGER.debug("Found roster entry IDs: %s", ",".join(roster_ids))
-
-        # Get details for each roster entry ID
-        for raw_roster_id in roster_ids:
-            roster_id = raw_roster_id.strip()
-            if not roster_id:
-                LOGGER.warning("Empty roster ID found, skipping")
-                continue
-
-            # Get details for the roster entry
-            entry = await self._get_roster_entry_details(roster_id)
-            self.roster_entries.append(entry)
-
-            # Print representation of the roster entry
-            LOGGER.debug("Roster entry detail: %s", entry)
-
-    async def _get_roster_ids(self) -> list[str]:
-        """Get the list of roster entry IDs from the EX-CommandStation."""
-        try:
-            response = await self.await_command_response(
-                RosterConsts.CMD_LIST_ROSTER_ENTRIES,
-                RosterConsts.RESP_LIST_PREFIX,
-            )
-            return RosterEntry.parse_roster_ids(response)
-        except TimeoutError:
-            msg = "Timeout waiting for roster list response"
-            LOGGER.error(msg)
-            raise EXCSConnectionError(msg) from None
-        except EXCSError as err:
-            LOGGER.error("Error getting roster list: %s", err)
-            raise
-        except Exception:
-            LOGGER.exception("Unexpected error while getting roster list")
-            raise
-
-    async def _get_roster_entry_details(self, roster_id: str) -> RosterEntry:
-        """Get details for a specific roster entry ID."""
-        try:
-            response = await self.await_command_response(
-                RosterConsts.CMD_GET_ROSTER_DETAILS_FMT.format(cab_id=roster_id),
-                RosterConsts.RESP_DETAILS_PREFIX_FMT.format(cab_id=roster_id),
-            )
-            return RosterEntry.from_detail_response(response)
-        except TimeoutError:
-            msg = f"Timeout waiting for roster details for ID {roster_id}"
-            LOGGER.error(msg)
-            raise EXCSConnectionError(msg) from None
-        except EXCSError as err:
-            LOGGER.error("Error getting roster detail: %s", err)
-            raise
-        except Exception:
-            LOGGER.exception(
-                "Unexpected error while getting roster details for ID %s", roster_id
-            )
-            raise
