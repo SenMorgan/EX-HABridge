@@ -11,7 +11,7 @@ from .const import DOMAIN, LOGGER, SIGNAL_DATA_PUSHED
 from .entity import EXCSEntity, EXCSRosterEntity
 from .icons_helper import get_function_icon
 from .roster import LocoFunction, LocoFunctionCmd, RosterEntry
-from .turnout import EXCSTurnout, TurnoutState
+from .turnout import EXCSTurnout, EXCSTurnoutState
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -143,7 +143,7 @@ class TurnoutSwitch(EXCSSwitchEntity, SwitchEntity):
         self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
 
         # Assuming THROWN means the switch is on
-        self._attr_is_on = turnout.state == TurnoutState.THROWN
+        self._attr_is_on = turnout.state == EXCSTurnoutState.THROWN
 
     @callback
     def _handle_push(self, message: str) -> None:
@@ -153,14 +153,16 @@ class TurnoutSwitch(EXCSSwitchEntity, SwitchEntity):
             if turnout_id == self._turnout.id:  # Double-check the turnout ID
                 LOGGER.debug("Turnout %d %s", turnout_id, state.name)
                 # Update the state of the switch
-                self._attr_is_on = state == TurnoutState.THROWN
+                self._attr_is_on = state == EXCSTurnoutState.THROWN
                 self.async_write_ha_state()
 
     async def async_turn_on(self, **_: Any) -> None:
         """Turn on the switch (set turnout to THROWN)."""
         try:
             await self._client.send_command(
-                EXCSTurnout.toggle_turnout_cmd(self._turnout.id, TurnoutState.THROWN)
+                EXCSTurnout.toggle_turnout_cmd(
+                    self._turnout.id, EXCSTurnoutState.THROWN
+                )
             )
         except EXCSError:
             # Handle the error if needed
@@ -170,7 +172,9 @@ class TurnoutSwitch(EXCSSwitchEntity, SwitchEntity):
         """Turn off the switch (set turnout to CLOSED)."""
         try:
             await self._client.send_command(
-                EXCSTurnout.toggle_turnout_cmd(self._turnout.id, TurnoutState.CLOSED)
+                EXCSTurnout.toggle_turnout_cmd(
+                    self._turnout.id, EXCSTurnoutState.CLOSED
+                )
             )
         except EXCSError:
             # Handle the error if needed

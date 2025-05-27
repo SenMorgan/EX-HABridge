@@ -30,15 +30,15 @@ class EXCSTurnoutConsts:
     )
 
 
-class TurnoutState(Enum):
+class EXCSTurnoutState(Enum):
     """Enum representing turnout states."""
 
     CLOSED = "C"  # straight
     THROWN = "T"  # diverging
 
     @classmethod
-    def from_char(cls, value: str) -> TurnoutState:
-        """Convert a character value (C or T) to a TurnoutState enum."""
+    def from_char(cls, value: str) -> EXCSTurnoutState:
+        """Convert a character value (C or T) to a EXCSTurnoutState enum."""
         for state in cls:
             if state.value == value:
                 return state
@@ -49,8 +49,8 @@ class TurnoutState(Enum):
         raise EXCSValueError(msg)
 
     @classmethod
-    def from_digit(cls, value: str) -> TurnoutState:
-        """Convert a digit value (0 or 1) to a TurnoutState enum."""
+    def from_digit(cls, value: str) -> EXCSTurnoutState:
+        """Convert a digit value (0 or 1) to a EXCSTurnoutState enum."""
         if value.isdigit():
             value_int = int(value)
             if value_int == 0:
@@ -74,7 +74,7 @@ class EXCSTurnout:
         self.description = description or f"Turnout {turnout_id}"
 
         # Normalize state to enum
-        self.state = TurnoutState.from_char(state)
+        self.state = EXCSTurnoutState.from_char(state)
 
         # Prefix to find out the turnout state in incoming messages
         self.recv_prefix = EXCSTurnoutConsts.RESP_STATE_PREFIX_FMT.format(id=self.id)
@@ -88,14 +88,14 @@ class EXCSTurnout:
         )
 
     @classmethod
-    def toggle_turnout_cmd(cls, turnout_id: int, state: TurnoutState) -> str:
+    def toggle_turnout_cmd(cls, turnout_id: int, state: EXCSTurnoutState) -> str:
         """Construct a command to set the turnout state."""
         return EXCSTurnoutConsts.CMD_TOGGLE_TURNOUT_FMT.format(
             id=turnout_id, state=state.value
         )
 
     @classmethod
-    def parse_turnout_state(cls, message: str) -> tuple[int, TurnoutState]:
+    def parse_turnout_state(cls, message: str) -> tuple[int, EXCSTurnoutState]:
         """Parse the turnout state from a message."""
         match = EXCSTurnoutConsts.RESP_STATE_REGEX.match(message)
         if not match:
@@ -104,7 +104,7 @@ class EXCSTurnout:
         turnout_id = int(match.group("id"))
 
         # Here the state is expected to be a digit
-        state = TurnoutState.from_digit(match.group("state"))
+        state = EXCSTurnoutState.from_digit(match.group("state"))
         return turnout_id, state
 
     @classmethod
