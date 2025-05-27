@@ -62,7 +62,7 @@ class EXCSConfigClient(EXCSBaseClient):
         """Parse a version string into a tuple of integers."""
         return tuple(int(part) for part in version_str.split("."))
 
-    async def _crate_initial_tracks_state_handler(self) -> None:
+    async def _create_initial_tracks_state_handler(self) -> None:
         """Create a one-time signal handler for the initial tracks state."""
         unsub_callback: Callable[..., Any]
 
@@ -92,7 +92,7 @@ class EXCSConfigClient(EXCSBaseClient):
             raise EXCSConnectionError(msg)
 
         # Create a one-time signal handler for the initial tracks state
-        await self._crate_initial_tracks_state_handler()
+        await self._create_initial_tracks_state_handler()
 
         LOGGER.debug("Requesting EX-CommandStation system info")
         try:
