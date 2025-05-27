@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
     from .coordinator import LocoUpdateCoordinator
-    from .excs_client import EXCommandStationClient
+    from .excs_client import EXCSClient
 
 
 from .commands import (
@@ -83,7 +83,7 @@ class EXCSSwitchEntity(EXCSEntity, SwitchEntity):
 class TracksPowerSwitch(EXCSSwitchEntity, SwitchEntity):
     """Representation of the EX-CommandStation tracks power switch."""
 
-    def __init__(self, client: EXCommandStationClient) -> None:
+    def __init__(self, client: EXCSClient) -> None:
         """Initialize the switch."""
         super().__init__(client)
 
@@ -129,7 +129,7 @@ class TracksPowerSwitch(EXCSSwitchEntity, SwitchEntity):
 class TurnoutSwitch(EXCSSwitchEntity, SwitchEntity):
     """Representation of a turnout switch."""
 
-    def __init__(self, client: EXCommandStationClient, turnout: EXCSTurnout) -> None:
+    def __init__(self, client: EXCSClient, turnout: EXCSTurnout) -> None:
         """Initialize the switch."""
         super().__init__(client)
         self._turnout = turnout
@@ -182,7 +182,7 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
 
     def __init__(
         self,
-        client: EXCommandStationClient,
+        client: EXCSClient,
         coordinator: LocoUpdateCoordinator,
         loco: RosterEntry,
         function: LocoFunction,

@@ -18,7 +18,7 @@ from .const import (
 from .coordinator import LocoUpdateCoordinator
 
 if TYPE_CHECKING:
-    from .excs_client import EXCommandStationClient
+    from .excs_client import EXCSClient
     from .roster import RosterEntry
 
 
@@ -28,7 +28,7 @@ class EXCSEntity(Entity):
     _attr_has_entity_name = True
     _attr_should_poll = False
 
-    def __init__(self, client: EXCommandStationClient) -> None:
+    def __init__(self, client: EXCSClient) -> None:
         """Initialize the entity."""
         self._client = client
         self._attr_available = client.connected  # Available if client is connected
@@ -80,7 +80,7 @@ class EXCSRosterEntity(CoordinatorEntity[LocoUpdateCoordinator]):
 
     def __init__(
         self,
-        client: EXCommandStationClient,
+        client: EXCSClient,
         coordinator: LocoUpdateCoordinator,
         roster_entry: RosterEntry,
     ) -> None:

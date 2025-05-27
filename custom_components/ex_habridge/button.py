@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    from .excs_client import EXCommandStationClient
+    from .excs_client import EXCSClient
 
 
 async def async_setup_entry(
@@ -42,7 +42,7 @@ class EXCSButtonEntity(EXCSEntity, ButtonEntity):
 class EXCSRebootButton(EXCSButtonEntity, ButtonEntity):
     """Representation of the EX-CommandStation reboot button."""
 
-    def __init__(self, client: EXCommandStationClient) -> None:
+    def __init__(self, client: EXCSClient) -> None:
         """Initialize the button."""
         super().__init__(client)
 
@@ -65,7 +65,7 @@ class EXCSRebootButton(EXCSButtonEntity, ButtonEntity):
 class EXCSEmergencyStopButton(EXCSButtonEntity, ButtonEntity):
     """Representation of the EX-CommandStation emergency stop button."""
 
-    def __init__(self, client: EXCommandStationClient) -> None:
+    def __init__(self, client: EXCSClient) -> None:
         """Initialize the button."""
         super().__init__(client)
 

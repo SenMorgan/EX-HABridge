@@ -15,7 +15,7 @@ from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 
 from .const import DOMAIN
 from .coordinator import LocoUpdateCoordinator
-from .excs_client import EXCommandStationClient
+from .excs_client import EXCSClient
 from .excs_exceptions import EXCSConnectionError, EXCSError, EXCSVersionError
 
 if TYPE_CHECKING:
@@ -37,7 +37,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     port = entry.data[CONF_PORT]
 
     try:
-        client = EXCommandStationClient(hass, host, port, entry.entry_id)
+        client = EXCSClient(hass, host, port, entry.entry_id)
         await client.async_setup()
     except (EXCSConnectionError, TimeoutError) as err:
         if client:
@@ -87,7 +87,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not data:
         return True
 
-    client: EXCommandStationClient = data["client"]
+    client: EXCSClient = data["client"]
     coordinators: dict[int, LocoUpdateCoordinator] = data["coordinators"]
 
     # Unregister services

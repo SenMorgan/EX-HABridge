@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from homeassistant.core import ServiceCall
 
 
-class EXCommandStationClient(EXCSConfigClient):
+class EXCSClient(EXCSConfigClient):
     """Client for communicating with the EX-CommandStation."""
 
     async def async_validate_config(self) -> None:

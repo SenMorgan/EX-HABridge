@@ -20,14 +20,14 @@ from .roster import RosterEntry
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
-    from .excs_client import EXCommandStationClient
+    from .excs_client import EXCSClient
 
 
 class LocoUpdateCoordinator(DataUpdateCoordinator[RosterEntry]):
     """Class to manage throttle updates for a locomotive."""
 
     def __init__(
-        self, hass: HomeAssistant, client: EXCommandStationClient, loco: RosterEntry
+        self, hass: HomeAssistant, client: EXCSClient, loco: RosterEntry
     ) -> None:
         """Initialize the locomotive update coordinator."""
         super().__init__(
