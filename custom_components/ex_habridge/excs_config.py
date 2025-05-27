@@ -28,6 +28,8 @@ if TYPE_CHECKING:
 
     from homeassistant.core import HomeAssistant
 
+    from .track import EXCSTrack
+
 
 @dataclass
 class EXCSSystemInfo:
@@ -55,6 +57,7 @@ class EXCSConfigClient(EXCSBaseClient):
         self.system_info = EXCSSystemInfo()
         self.turnouts: list[EXCSTurnout] = []
         self.roster_entries: list[RosterEntry] = []
+        self.tracks: list[EXCSTrack] = []
         self.initial_tracks_state: bool = False
 
     @classmethod
@@ -287,3 +290,74 @@ class EXCSConfigClient(EXCSBaseClient):
                 "Unexpected error while getting roster details for ID %s", roster_id
             )
             raise
+
+    async def get_tracks(self) -> None:
+        """Request the list of tracks from the EX-CommandStation."""
+        if not self.connected:
+            msg = "Not connected to EX-CommandStation"
+            raise EXCSConnectionError(msg)
+
+        LOGGER.debug("Requesting list of tracks from EX-CommandStation")
+
+        # Clear existing tracks
+        self.tracks.clear()
+
+        # Import here to avoid circular imports
+        from .track import EXCSTrack, TrackConsts
+
+        try:
+            # Send command to get list of tracks
+            response = await self.await_command_response(
+                TrackConsts.CMD_LIST_TRACKS, TrackConsts.RESP_TRACK_LIST_PREFIX
+            )
+
+            # Parse response to get tracks
+            tracks = EXCSTrack.parse_track_list_response(response)
+
+            # Add tracks to the list
+            self.tracks.extend(tracks)
+
+            # Set initial power state based on global power state
+            for track in self.tracks:
+                track.is_powered = self.initial_tracks_state
+
+            # Get current for each track
+            for track in self.tracks:
+                try:
+                    # Command to get current for a specific track
+                    current_response = await self.await_command_response(
+                        TrackConsts.CMD_GET_CURRENT,
+                        TrackConsts.RESP_TRACK_CURRENT_PREFIX.format(
+                            track_letter=track.letter
+                        ),
+                    )
+
+                    # Parse current response
+                    track_letter, current, max_ma, trip_ma = (
+                        EXCSTrack.parse_track_current_response(current_response)
+                    )
+
+                    # Update track if it matches the letter
+                    if track.letter == track_letter:
+                        track.current = current
+                        track.max_ma = max_ma
+                        track.trip_ma = trip_ma
+
+                except (EXCSError, Exception) as err:
+                    LOGGER.warning(
+                        "Failed to get current for track %s: %s", track.letter, err
+                    )
+
+        except EXCSError as err:
+            LOGGER.error("Failed to get tracks: %s", err)
+            raise
+        except Exception:
+            LOGGER.exception(
+                "Unexpected error while getting tracks from EX-CommandStation"
+            )
+            raise
+
+        if self.tracks:
+            LOGGER.debug("Found %d tracks", len(self.tracks))
+        else:
+            LOGGER.debug("No tracks found")

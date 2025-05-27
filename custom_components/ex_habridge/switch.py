@@ -11,6 +11,7 @@ from .const import DOMAIN, LOGGER
 from .entity import EXCSEntity, EXCSRosterEntity
 from .icons_helper import get_function_icon
 from .roster import LocoFunction, LocoFunctionCmd, RosterEntry
+from .track import EXCSTrack, TrackConsts
 from .turnout import EXCSTurnout, TurnoutState
 
 if TYPE_CHECKING:
@@ -39,15 +40,22 @@ async def async_setup_entry(
     client = data["client"]
     coordinators = data["coordinators"]
 
-    # Add tracks power switch
-    async_add_entities([TracksPowerSwitch(client)])
+    entities = []
+
+    # Add tracks power switch for all tracks
+    entities.append(TracksPowerSwitch(client))
+
+    # Add individual track power switches
+    if client.tracks:
+        track_switches = [TrackPowerSwitch(client, track) for track in client.tracks]
+        entities.extend(track_switches)
 
     # Add turnout switches
     if client.turnouts:
         turnout_switches = [
             TurnoutSwitch(client, turnout) for turnout in client.turnouts
         ]
-        async_add_entities(turnout_switches)
+        entities.extend(turnout_switches)
 
     # Add locomotive function switches
     function_switches = []
@@ -61,7 +69,9 @@ async def async_setup_entry(
         )
 
     if function_switches:
-        async_add_entities(function_switches)
+        entities.extend(function_switches)
+
+    async_add_entities(entities)
 
 
 class TracksPowerSwitch(EXCSEntity, SwitchEntity):
@@ -108,6 +118,74 @@ class TracksPowerSwitch(EXCSEntity, SwitchEntity):
         except EXCSError:
             # Handle the error if needed
             LOGGER.exception("Failed to turn OFF tracks power")
+
+
+class TrackPowerSwitch(EXCSEntity, SwitchEntity):
+    """Representation of an individual track power switch."""
+
+    def __init__(self, client: EXCommandStationClient, track: EXCSTrack) -> None:
+        """Initialize the switch."""
+        super().__init__(client)
+        self._track = track
+
+        # Set entity properties
+        self._attr_name = f"Track {track.letter} ({track.mode}) Power"
+        self.entity_description = SwitchEntityDescription(
+            key=f"track_{track.letter}_power",
+            icon="mdi:power",
+        )
+        self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
+
+        # Initial state matches the global track power
+        self._attr_is_on = client.initial_tracks_state
+
+        # Track power response patterns
+        self._power_on_response = TrackConsts.RESP_TRACK_POWER_ON_FMT.format(
+            track_letter=track.letter
+        )
+        self._power_off_response = TrackConsts.RESP_TRACK_POWER_OFF_FMT.format(
+            track_letter=track.letter
+        )
+
+    @callback
+    def _handle_push(self, message: str) -> None:
+        """Handle incoming messages from the EX-CommandStation."""
+        if message == self._power_on_response:
+            LOGGER.debug("Track %s power ON", self._track.letter)
+            self._attr_is_on = True
+            self._track.is_powered = True
+            self.async_write_ha_state()
+        elif message == self._power_off_response:
+            LOGGER.debug("Track %s power OFF", self._track.letter)
+            self._attr_is_on = False
+            self._track.is_powered = False
+            self.async_write_ha_state()
+        elif message == RESP_TRACKS_ON:
+            # Global power on should set all tracks to on
+            self._attr_is_on = True
+            self._track.is_powered = True
+            self.async_write_ha_state()
+        elif message == RESP_TRACKS_OFF:
+            # Global power off should set all tracks to off
+            self._attr_is_on = False
+            self._track.is_powered = False
+            self.async_write_ha_state()
+
+    async def async_turn_on(self, **_: Any) -> None:
+        """Turn on the track power."""
+        try:
+            command = EXCSTrack.toggle_track_power_cmd(self._track.letter, state=True)
+            await self._client.send_command(command)
+        except EXCSError:
+            LOGGER.exception("Failed to turn ON track %s power", self._track.letter)
+
+    async def async_turn_off(self, **_: Any) -> None:
+        """Turn off the track power."""
+        try:
+            command = EXCSTrack.toggle_track_power_cmd(self._track.letter, state=False)
+            await self._client.send_command(command)
+        except EXCSError:
+            LOGGER.exception("Failed to turn OFF track %s power", self._track.letter)
 
 
 class TurnoutSwitch(EXCSEntity, SwitchEntity):

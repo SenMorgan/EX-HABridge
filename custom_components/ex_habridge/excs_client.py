@@ -39,6 +39,8 @@ class EXCommandStationClient(EXCSConfigClient):
         await self.get_turnouts()
         # Fetch the list of roster entries
         await self.get_roster_entries()
+        # Fetch the list of tracks
+        await self.get_tracks()
 
     async def async_shutdown(self) -> None:
         """Shutdown the EX-CommandStation client."""
