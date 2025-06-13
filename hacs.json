@@ -1,6 +1,6 @@
 {
     "name": "EX-HABridge",
-    "homeassistant": "2025.4.2",
+    "homeassistant": "2025.6.0",
     "zip_release": true,
     "filename": "ex_habridge.zip",
     "hide_default_branch": true,
