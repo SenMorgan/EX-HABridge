@@ -33,22 +33,18 @@ This custom integration allows [Home Assistant](https://www.home-assistant.io/) 
 - [ ] Read CV registers via service
 - [ ] Display CV read results
 
-## Installation
+## Installation using HACS
 
-1. Copy `custom_components/ex_habridge` directory to your Home Assistant `custom_components` directory. The path should look like this: `custom_components/ex_habridge/`.
-2. Restart Home Assistant.
-3. Add the integration using the Home Assistant UI:
-   - Go to **Settings** > **Devices & services** > **Add Integration**.
-   - Search for *EX-HABridge* and follow the prompts to set it up.
-
-## Disclaimer
-
-This integration is an unofficial, community-developed project and is not affiliated with or officially endorsed by Home Assistant or the DCC-EX project. Use at your own risk.
-
-The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement. In no event shall the author(s) be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
-
-All trademarks and logos are property of their respective owners.
-
+To install the EX-HABridge integration using [HACS](https://hacs.xyz/), follow these steps:
+1. Open Home Assistant and navigate to **HACS**.
+2. Click on 3 dots in the top right corner and select **Custom repositories**.
+3. Fill in the form and click **Add**:
+   - **Repository**: `https://github.com/SenMorgan/EX-HABridge`
+   - **Type**: `Integration`
+4. Once added, go back to **Integrations** in HACS, search for *EX-HABridge*, and click the **DOWNLOAD** button.
+5. After the download is complete, restart Home Assistant.
+6. Go to **Settings** > **Devices & Services** and click on **Add Integration**.
+7. Search for *EX-HABridge* and follow the prompts to configure the integration.
 
 ## Disclaimer
 
@@ -57,7 +53,6 @@ This integration is an unofficial, community-developed project and is not affili
 The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement. In no event shall the author(s) be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
 
 All trademarks and logos are property of their respective owners.
-
 
 ## License
 
