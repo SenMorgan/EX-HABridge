@@ -15,7 +15,7 @@ from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 
 from .const import DOMAIN
 from .coordinator import LocoUpdateCoordinator
-from .excs_client import EXCommandStationClient
+from .excs_client import EXCSClient
 from .excs_exceptions import EXCSConnectionError, EXCSError, EXCSVersionError
 
 if TYPE_CHECKING:
@@ -24,9 +24,10 @@ if TYPE_CHECKING:
 
 
 PLATFORMS: list[Platform] = [
+    Platform.BUTTON,
+    Platform.SWITCH,
     # Platform.SENSOR,
     # Platform.BINARY_SENSOR,
-    Platform.SWITCH,
 ]
 
 
@@ -35,18 +36,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     host = entry.data[CONF_HOST]
     port = entry.data[CONF_PORT]
 
-    client = EXCommandStationClient(hass, host, port, entry.entry_id)
-
     try:
+        client = EXCSClient(hass, host, port, entry.entry_id)
         await client.async_setup()
     except (EXCSConnectionError, TimeoutError) as err:
-        await client.async_shutdown()
+        if client:
+            await client.async_shutdown()
         raise ConfigEntryNotReady from err
     except EXCSVersionError as err:
-        await client.async_shutdown()
+        if client:
+            await client.async_shutdown()
         raise ConfigEntryError from err
     except EXCSError as err:
-        await client.async_shutdown()
+        if client:
+            await client.async_shutdown()
         msg = f"Unexpected error: {err}"
         raise ConfigEntryError(msg) from err
 
@@ -84,7 +87,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not data:
         return True
 
-    client: EXCommandStationClient = data["client"]
+    client: EXCSClient = data["client"]
     coordinators: dict[int, LocoUpdateCoordinator] = data["coordinators"]
 
     # Unregister services
@@ -98,7 +101,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_shutdown()
 
     # Disconnect client
-    await client.async_shutdown()
+    if client:
+        await client.async_shutdown()
 
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)

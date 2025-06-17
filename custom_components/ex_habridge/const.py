@@ -7,7 +7,7 @@ LOGGER: Logger = getLogger(__package__)
 
 DOMAIN: Final = "ex_habridge"
 
-# Deault port used in the EX-CommandStation
+# Default port used in the EX-CommandStation
 DEFAULT_PORT: Final = 2560
 
 # Timeouts for various operations

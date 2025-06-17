@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import callback
 
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, SIGNAL_DATA_PUSHED
 from .entity import EXCSEntity, EXCSRosterEntity
 from .icons_helper import get_function_icon
-from .roster import LocoFunction, LocoFunctionCmd, RosterEntry
-from .turnout import EXCSTurnout, TurnoutState
+from .roster import EXCSLocoFunction, EXCSLocoFunctionCmd, EXCSRosterEntry
+from .turnout import EXCSTurnout, EXCSTurnoutState
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
     from .coordinator import LocoUpdateCoordinator
-    from .excs_client import EXCommandStationClient
+    from .excs_client import EXCSClient
 
 
 from .commands import (
@@ -64,18 +64,38 @@ async def async_setup_entry(
         async_add_entities(function_switches)
 
 
-class TracksPowerSwitch(EXCSEntity, SwitchEntity):
+class EXCSSwitchEntity(EXCSEntity, SwitchEntity):
+    """Base class for EX-CommandStation switch entities."""
+
+    @callback
+    def _handle_push(self, message: str) -> None:
+        """Abstract method to handle incoming messages from the EX-CommandStation."""
+        raise NotImplementedError
+
+    async def async_added_to_hass(self) -> None:
+        """Register data push callbacks."""
+        await super().async_added_to_hass()
+        self._unsub_callbacks.append(
+            self._client.register_signal_handler(SIGNAL_DATA_PUSHED, self._handle_push)
+        )
+
+
+class TracksPowerSwitch(EXCSSwitchEntity, SwitchEntity):
     """Representation of the EX-CommandStation tracks power switch."""
 
-    def __init__(self, client: EXCommandStationClient) -> None:
+    def __init__(self, client: EXCSClient) -> None:
         """Initialize the switch."""
         super().__init__(client)
+
+        # Set entity properties
         self._attr_name = "Tracks Power"
         self.entity_description = SwitchEntityDescription(
             key="tracks_power",
             icon="mdi:power",
         )
         self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
+
+        # Set initial state based on the client's initial tracks state
         self._attr_is_on = client.initial_tracks_state
 
     @callback
@@ -106,21 +126,24 @@ class TracksPowerSwitch(EXCSEntity, SwitchEntity):
             LOGGER.exception("Failed to turn OFF tracks power")
 
 
-class TurnoutSwitch(EXCSEntity, SwitchEntity):
+class TurnoutSwitch(EXCSSwitchEntity, SwitchEntity):
     """Representation of a turnout switch."""
 
-    def __init__(self, client: EXCommandStationClient, turnout: EXCSTurnout) -> None:
+    def __init__(self, client: EXCSClient, turnout: EXCSTurnout) -> None:
         """Initialize the switch."""
         super().__init__(client)
         self._turnout = turnout
+
+        # Set entity properties
         self._attr_name = turnout.description
         self.entity_description = SwitchEntityDescription(
             key=f"turnout_{turnout.id}",
             icon="mdi:source-branch",
         )
         self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
+
         # Assuming THROWN means the switch is on
-        self._attr_is_on = turnout.state == TurnoutState.THROWN
+        self._attr_is_on = turnout.state == EXCSTurnoutState.THROWN
 
     @callback
     def _handle_push(self, message: str) -> None:
@@ -130,14 +153,16 @@ class TurnoutSwitch(EXCSEntity, SwitchEntity):
             if turnout_id == self._turnout.id:  # Double-check the turnout ID
                 LOGGER.debug("Turnout %d %s", turnout_id, state.name)
                 # Update the state of the switch
-                self._attr_is_on = state == TurnoutState.THROWN
+                self._attr_is_on = state == EXCSTurnoutState.THROWN
                 self.async_write_ha_state()
 
     async def async_turn_on(self, **_: Any) -> None:
         """Turn on the switch (set turnout to THROWN)."""
         try:
             await self._client.send_command(
-                EXCSTurnout.toggle_turnout_cmd(self._turnout.id, TurnoutState.THROWN)
+                EXCSTurnout.toggle_turnout_cmd(
+                    self._turnout.id, EXCSTurnoutState.THROWN
+                )
             )
         except EXCSError:
             # Handle the error if needed
@@ -147,7 +172,9 @@ class TurnoutSwitch(EXCSEntity, SwitchEntity):
         """Turn off the switch (set turnout to CLOSED)."""
         try:
             await self._client.send_command(
-                EXCSTurnout.toggle_turnout_cmd(self._turnout.id, TurnoutState.CLOSED)
+                EXCSTurnout.toggle_turnout_cmd(
+                    self._turnout.id, EXCSTurnoutState.CLOSED
+                )
             )
         except EXCSError:
             # Handle the error if needed
@@ -159,10 +186,10 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
 
     def __init__(
         self,
-        client: EXCommandStationClient,
+        client: EXCSClient,
         coordinator: LocoUpdateCoordinator,
-        loco: RosterEntry,
-        function: LocoFunction,
+        loco: EXCSRosterEntry,
+        function: EXCSLocoFunction,
     ) -> None:
         """Initialize the switch."""
         super().__init__(client, coordinator, loco)
@@ -170,15 +197,14 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
 
         # Set entity properties
         self._attr_name = function.label
-        self._attr_unique_id = (
-            f"{client.entry_id}_loco_{loco.id}_function_{function.id}"
-        )
-        self._attr_is_on = function.state
-
         self.entity_description = SwitchEntityDescription(
             key=f"function_{loco.id}_{function.id}",
             icon=get_function_icon(function.label),  # Set icon based on function label
         )
+        self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
+
+        # Set initial state based on function state
+        self._attr_is_on = function.state
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -194,7 +220,9 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
         """Turn on the function."""
         try:
             await self._client.send_command(
-                self._loco.toggle_function_cmd(self._function_id, LocoFunctionCmd.ON)
+                self._loco.toggle_function_cmd(
+                    self._function_id, EXCSLocoFunctionCmd.ON
+                )
             )
         except EXCSError:
             # Handle the error if needed
@@ -208,7 +236,9 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
         """Turn off the function."""
         try:
             await self._client.send_command(
-                self._loco.toggle_function_cmd(self._function_id, LocoFunctionCmd.OFF)
+                self._loco.toggle_function_cmd(
+                    self._function_id, EXCSLocoFunctionCmd.OFF
+                )
             )
         except EXCSError:
             # Handle the error if needed

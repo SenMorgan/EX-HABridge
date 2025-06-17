@@ -13,14 +13,13 @@ from .const import (
     DOMAIN,
     LOGGER,
     SIGNAL_CONNECTED,
-    SIGNAL_DATA_PUSHED,
     SIGNAL_DISCONNECTED,
 )
 from .coordinator import LocoUpdateCoordinator
 
 if TYPE_CHECKING:
-    from .excs_client import EXCommandStationClient
-    from .roster import RosterEntry
+    from .excs_client import EXCSClient
+    from .roster import EXCSRosterEntry
 
 
 class EXCSEntity(Entity):
@@ -29,7 +28,7 @@ class EXCSEntity(Entity):
     _attr_has_entity_name = True
     _attr_should_poll = False
 
-    def __init__(self, client: EXCommandStationClient) -> None:
+    def __init__(self, client: EXCSClient) -> None:
         """Initialize the entity."""
         self._client = client
         self._attr_available = client.connected  # Available if client is connected
@@ -39,17 +38,10 @@ class EXCSEntity(Entity):
             manufacturer="DCC-EX",
             model="EX-CommandStation",
             sw_version=client.system_info.version,
-            suggested_area="Train Layout",
         )
 
         # List to store signal unsubscribe callbacks
         self._unsub_callbacks = []
-
-    @callback
-    def _handle_push(self, message: str) -> None:
-        """Handle incoming messages from the EX-CommandStation."""
-        # This method should be overridden in subclasses to handle specific messages
-        raise NotImplementedError
 
     @callback
     def _on_connect(self) -> None:
@@ -71,7 +63,6 @@ class EXCSEntity(Entity):
             self._client.register_signal_handler(
                 SIGNAL_DISCONNECTED, self._on_disconnect
             ),
-            self._client.register_signal_handler(SIGNAL_DATA_PUSHED, self._handle_push),
         ]
 
     async def async_will_remove_from_hass(self) -> None:
@@ -89,9 +80,9 @@ class EXCSRosterEntity(CoordinatorEntity[LocoUpdateCoordinator]):
 
     def __init__(
         self,
-        client: EXCommandStationClient,
+        client: EXCSClient,
         coordinator: LocoUpdateCoordinator,
-        roster_entry: RosterEntry,
+        roster_entry: EXCSRosterEntry,
     ) -> None:
         """Initialize the roster entity."""
         super().__init__(coordinator)
@@ -105,5 +96,4 @@ class EXCSRosterEntity(CoordinatorEntity[LocoUpdateCoordinator]):
             model=roster_entry.description or f"Locomotive {roster_entry.id}",
             model_id=str(roster_entry.id),
             via_device=(DOMAIN, client.host),
-            suggested_area="Train Layout",
         )

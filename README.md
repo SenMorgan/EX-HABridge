@@ -24,6 +24,7 @@ This custom integration allows [Home Assistant](https://www.home-assistant.io/) 
 - [x] Support for loco function commands control (using service calls)
 - [x] Multi-locomotive support
 - [x] Turnout control
+- [x] Routes/automations control
 - [ ] Turntable control
 
 ### CV Operations

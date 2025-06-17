@@ -9,7 +9,7 @@ from homeassistant.const import CONF_BASE, CONF_HOST, CONF_PORT, CONF_PROFILE_NA
 from slugify import slugify
 
 from .const import DEFAULT_PORT, DOMAIN, LOGGER
-from .excs_client import EXCommandStationClient
+from .excs_client import EXCSClient
 from .excs_exceptions import EXCSConnectionError, EXCSError, EXCSVersionError
 
 USER_SCHEMA = vol.Schema(
@@ -43,7 +43,7 @@ class EXCommandStationConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Attempt to connect to the EX-CommandStation and validate the configuration
             client = None
             try:
-                client = EXCommandStationClient(self.hass, host, port)
+                client = EXCSClient(self.hass, host, port)
                 await client.async_validate_config()
 
                 # Use provided profile name or fallback to default

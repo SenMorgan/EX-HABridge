@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from homeassistant.core import ServiceCall
 
 
-class EXCommandStationClient(EXCSConfigClient):
+class EXCSClient(EXCSConfigClient):
     """Client for communicating with the EX-CommandStation."""
 
     async def async_validate_config(self) -> None:
@@ -35,10 +35,12 @@ class EXCommandStationClient(EXCSConfigClient):
         LOGGER.debug("Configuring EX-CommandStation client")
         await self.get_excs_system_info()
         await self.validate_excs_version()
-        # Fetch the list of turnouts
-        await self.get_turnouts()
         # Fetch the list of roster entries
         await self.get_roster_entries()
+        # Fetch the list of routes
+        await self.get_routes()
+        # Fetch the list of turnouts
+        await self.get_turnouts()
 
     async def async_shutdown(self) -> None:
         """Shutdown the EX-CommandStation client."""
