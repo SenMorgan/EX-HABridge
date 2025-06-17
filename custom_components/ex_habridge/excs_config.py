@@ -21,12 +21,14 @@ from .excs_exceptions import (
     EXCSVersionError,
 )
 from .roster_manager import EXCSRosterManager
+from .routes_manager import EXCSRoutesManager
 from .turnouts_manager import EXCSTurnoutsManager
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from homeassistant.core import HomeAssistant
+    from route import EXCSRoute
 
     from .roster import EXCSRosterEntry
     from .turnout import EXCSTurnout
@@ -56,32 +58,42 @@ class EXCSConfigClient(EXCSBaseClient):
         """Initialize the configuration client."""
         super().__init__(hass, host, port, entry_id)
         self.system_info = EXCSSystemInfo()
-        self.turnouts_manager = EXCSTurnoutsManager(self)
         self.roster_manager = EXCSRosterManager(self)
+        self.routes_manager = EXCSRoutesManager(self)
+        self.turnouts_manager = EXCSTurnoutsManager(self)
         self.initial_tracks_state: bool = False
-
-    @property
-    def turnouts(self) -> list[EXCSTurnout]:
-        """Return the list of turnouts."""
-        return self.turnouts_manager.turnouts
 
     @property
     def roster_entries(self) -> list[EXCSRosterEntry]:
         """Return the list of roster entries."""
         return self.roster_manager.entries
 
+    @property
+    def routes(self) -> list[EXCSRoute]:
+        """Return the list of routes."""
+        return self.routes_manager.routes
+
+    @property
+    def turnouts(self) -> list[EXCSTurnout]:
+        """Return the list of turnouts."""
+        return self.turnouts_manager.turnouts
+
     @classmethod
     def parse_version(cls, version_str: str) -> tuple[int, ...]:
         """Parse a version string into a tuple of integers."""
         return tuple(int(part) for part in version_str.split("."))
 
-    async def get_turnouts(self) -> None:
-        """Request the list of turnouts from the EX-CommandStation."""
-        await self.turnouts_manager.get_turnouts()
-
     async def get_roster_entries(self) -> None:
         """Request the list of roster entries from the EX-CommandStation."""
         await self.roster_manager.get_roster_entries()
+
+    async def get_routes(self) -> None:
+        """Request the list of routes from the EX-CommandStation."""
+        await self.routes_manager.get_routes()
+
+    async def get_turnouts(self) -> None:
+        """Request the list of turnouts from the EX-CommandStation."""
+        await self.turnouts_manager.get_turnouts()
 
     async def _create_initial_tracks_state_handler(self) -> None:
         """Create a one-time signal handler for the initial tracks state."""
