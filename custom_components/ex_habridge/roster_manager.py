@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .const import LOGGER
-from .excs_exceptions import EXCSConnectionError, EXCSError
+from .excs_exceptions import EXCSConnectionError, EXCSError, EXCSInvalidResponseError
 from .roster import EXCSRosterConsts, EXCSRosterEntry
 
 if TYPE_CHECKING:
@@ -61,7 +61,7 @@ class EXCSRosterManager:
                 EXCSRosterConsts.CMD_LIST_ROSTER_ENTRIES,
                 EXCSRosterConsts.RESP_LIST_PREFIX,
             )
-            return EXCSRosterEntry.parse_roster_ids(response)
+            return self.parse_roster_ids(response)
         except TimeoutError:
             msg = "Timeout waiting for roster list response"
             LOGGER.error(msg)
@@ -72,6 +72,22 @@ class EXCSRosterManager:
         except Exception:
             LOGGER.exception("Unexpected error while getting roster list")
             raise
+
+    def parse_roster_ids(self, response: str) -> list[str]:
+        """Parse roster IDs from a list roster response."""
+        # Check for empty roster list
+        if not response.removeprefix(EXCSRosterConsts.RESP_LIST_PREFIX):
+            return []
+
+        # Check for valid roster list response
+        if match := EXCSRosterConsts.RESP_LIST_REGEX.match(response):
+            roster_ids = match.group("ids")
+            if roster_ids:
+                return roster_ids.split()
+            return []
+
+        msg = f"Invalid response for roster list: {response}"
+        raise EXCSInvalidResponseError(msg)
 
     async def _get_roster_entry_details(self, roster_id: str) -> EXCSRosterEntry:
         """Get details for a specific roster entry ID."""

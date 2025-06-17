@@ -108,23 +108,6 @@ class EXCSTurnout:
         return turnout_id, state
 
     @classmethod
-    def parse_turnout_ids(cls, response: str) -> list[str]:
-        """Parse turnout IDs from a list turnouts response."""
-        # Check for empty turnout list
-        if not response.removeprefix(EXCSTurnoutConsts.RESP_LIST_PREFIX):
-            return []
-
-        # Check for valid turnout list response
-        if match := EXCSTurnoutConsts.RESP_LIST_REGEX.match(response):
-            turnout_ids = match.group("ids")
-            if turnout_ids:
-                return turnout_ids.split()
-            return []
-
-        msg = f"Invalid response for turnout list: {response}"
-        raise EXCSInvalidResponseError(msg)
-
-    @classmethod
     def from_detail_response(cls, response: str) -> EXCSTurnout:
         """Create a turnout instance from a detail response."""
         if match := EXCSTurnoutConsts.RESP_DETAILS_REGEX.match(response):

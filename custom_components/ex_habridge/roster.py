@@ -166,23 +166,6 @@ class EXCSRosterEntry:
             self.functions[i].state = bool((function_map >> i) & 1)
 
     @classmethod
-    def parse_roster_ids(cls, response: str) -> list[str]:
-        """Parse roster IDs from a list roster response."""
-        # Check for empty roster list
-        if not response.removeprefix(EXCSRosterConsts.RESP_LIST_PREFIX):
-            return []
-
-        # Check for valid roster list response
-        if match := EXCSRosterConsts.RESP_LIST_REGEX.match(response):
-            roster_ids = match.group("ids")
-            if roster_ids:
-                return roster_ids.split()
-            return []
-
-        msg = f"Invalid response for roster list: {response}"
-        raise EXCSInvalidResponseError(msg)
-
-    @classmethod
     def from_detail_response(cls, response: str) -> EXCSRosterEntry:
         """Create a roster entry instance from a detail response."""
         if match := EXCSRosterConsts.RESP_DETAILS_REGEX.match(response):
