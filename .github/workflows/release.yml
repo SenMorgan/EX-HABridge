@@ -54,5 +54,6 @@ jobs:
           name: "${{ github.ref_name }} - ${{ steps.get_date.outputs.date }} 🚂"
           files: ./custom_components/ex_habridge/ex_habridge.zip
           generate_release_notes: true
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
