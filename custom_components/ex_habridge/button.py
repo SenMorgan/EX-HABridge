@@ -45,7 +45,7 @@ class EXCSButtonEntity(EXCSEntity, ButtonEntity):
     """Base class for EX-CommandStation button entities."""
 
 
-class EXCSRebootButton(EXCSButtonEntity, ButtonEntity):
+class EXCSRebootButton(EXCSButtonEntity):
     """Representation of the EX-CommandStation reboot button."""
 
     def __init__(self, client: EXCSClient) -> None:
@@ -68,7 +68,7 @@ class EXCSRebootButton(EXCSButtonEntity, ButtonEntity):
             LOGGER.exception("Failed to reboot EX-CommandStation")
 
 
-class EXCSEmergencyStopButton(EXCSButtonEntity, ButtonEntity):
+class EXCSEmergencyStopButton(EXCSButtonEntity):
     """Representation of the EX-CommandStation emergency stop button."""
 
     def __init__(self, client: EXCSClient) -> None:
@@ -91,7 +91,7 @@ class EXCSEmergencyStopButton(EXCSButtonEntity, ButtonEntity):
             LOGGER.exception("Failed to send emergency stop command")
 
 
-class RouteButton(EXCSButtonEntity, ButtonEntity):
+class RouteButton(EXCSButtonEntity):
     """Representation of a route or automation button in the EX-CommandStation."""
 
     def __init__(self, client: EXCSClient, route: EXCSRoute) -> None:

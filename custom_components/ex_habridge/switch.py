@@ -80,7 +80,7 @@ class EXCSSwitchEntity(EXCSEntity, SwitchEntity):
         )
 
 
-class TracksPowerSwitch(EXCSSwitchEntity, SwitchEntity):
+class TracksPowerSwitch(EXCSSwitchEntity):
     """Representation of the EX-CommandStation tracks power switch."""
 
     def __init__(self, client: EXCSClient) -> None:
@@ -126,7 +126,7 @@ class TracksPowerSwitch(EXCSSwitchEntity, SwitchEntity):
             LOGGER.exception("Failed to turn OFF tracks power")
 
 
-class TurnoutSwitch(EXCSSwitchEntity, SwitchEntity):
+class TurnoutSwitch(EXCSSwitchEntity):
     """Representation of a turnout switch."""
 
     def __init__(self, client: EXCSClient, turnout: EXCSTurnout) -> None:
