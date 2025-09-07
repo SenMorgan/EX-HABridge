@@ -11,7 +11,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 
-from .commands import CMD_KEEP_ALIVE
+from .commands import CMD_KEEP_ALIVE, RESP_FAIL
 from .const import (
     CONNECTION_TIMEOUT,
     DOMAIN,
@@ -310,9 +310,14 @@ class EXCSBaseClient:
         # Remove the angle brackets
         message = message[1:-1]
 
-        # Check if message is empty or indicates failure
+        # Check if message is empty
         if message == "":
             LOGGER.warning("Empty message received from EX-CommandStation")
+            return
+
+        # Check if message indicates failure
+        if message == RESP_FAIL:
+            LOGGER.error("EX-CommandStation reported a failure")
             return
 
         # Message was awaited via send_command_with_response()
