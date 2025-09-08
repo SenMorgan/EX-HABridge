@@ -78,15 +78,15 @@ class EXCSBaseClient:
                 self._listener_loop(), name="EXCS Listener"
             )
 
+        # Wait for the connection to be established
+        await self.wait_for_connection()
+        LOGGER.debug("Connected to EX-CommandStation on %s:%s", self.host, self.port)
+
         # Start keep-alive task
         if self._keep_alive_task is None or self._keep_alive_task.done():
             self._keep_alive_task = self._hass.async_create_background_task(
                 self._keep_alive_loop(), name="EXCS Keep-Alive"
             )
-
-        # Wait for the connection to be established
-        await self.wait_for_connection()
-        LOGGER.debug("Connected to EX-CommandStation on %s:%s", self.host, self.port)
 
     async def disconnect(self) -> None:
         """Disconnect from the EX-CommandStation."""
@@ -189,7 +189,11 @@ class EXCSBaseClient:
         """Send periodic keep-alive messages to the EX-CommandStation."""
         while self._running:
             # Wait for the connection to be established
-            await self.wait_for_connection()
+            try:
+                await self.wait_for_connection()
+            except TimeoutError:
+                LOGGER.debug("Keep-alive waiting for connection")
+                continue
 
             try:
                 # Wait for the next interval
