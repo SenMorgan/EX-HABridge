@@ -1,13 +1,9 @@
-> [!WARNING]
-> **Work in progress:** This integration is currently under development and may not be fully functional. Please check back later for updates.
-
-<p align="center">
-   <img src="https://media3.giphy.com/media/TLeLKUdIc1tvAxb7ab/source.gif" width="400" height="250" />
-</p>
-
 # EX-HABridge Integration for Home Assistant
 
-This custom integration allows [Home Assistant](https://www.home-assistant.io/) to monitor and control an [EX-CommandStation](https://dcc-ex.com/ex-commandstation/index.html) — a simple but powerful DCC/DC command station used to run model train layouts.
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+
+Custom integration that allows [Home Assistant](https://www.home-assistant.io/) to control and monitor an [EX-CommandStation](https://dcc-ex.com/ex-commandstation/index.html) — a simple but powerful DCC/DC command station used for running model train layouts.
+
 
 ## ✅ Planned and Implemented Features
 
