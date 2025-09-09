@@ -50,18 +50,17 @@ async def async_setup_entry(
         async_add_entities(turnout_switches)
 
     # Add locomotive function switches
-    function_switches = []
+    entities = []
     for loco in client.roster_entries:
         coordinator = coordinators[loco.id]
-        function_switches.extend(
+        entities.extend(
             [
                 LocoFunctionSwitch(client, coordinator, loco, function)
                 for function in loco.functions.values()
             ]
         )
-
-    if function_switches:
-        async_add_entities(function_switches)
+    if entities:
+        async_add_entities(entities)
 
 
 class EXCSSwitchEntity(EXCSEntity, SwitchEntity):

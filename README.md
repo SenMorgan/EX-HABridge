@@ -22,6 +22,7 @@ This custom integration allows [Home Assistant](https://www.home-assistant.io/) 
 
 - [x] Tracks power toggle (common for Main and Program tracks)
 - [x] Support for loco function commands control (using service calls)
+- [x] Loco speed and direction control
 - [x] Multi-locomotive support
 - [x] Turnout control
 - [x] Routes/automations control
