@@ -26,6 +26,7 @@ RESP_TRACKS_ON: Final[str] = "p1"
 RESP_TRACKS_OFF: Final[str] = "p0"
 EMERGENCY_STOP: Final[str] = "!"
 REBOOT: Final[str] = "D RESET"
+RESP_FAIL: Final[str] = "X"
 
 
 def command_write_cv(addr: int, cv: int, value: int) -> str:

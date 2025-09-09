@@ -15,6 +15,9 @@ class EXCSRosterConsts:
     # From RCN-212, see: https://dcc-ex.com/reference/software/command-summary-consolidated.html#f-cab-funct-state-turn-loco-decoder-functions-on-or-off
     MAX_SUPPORTED_FUNCTION: Final[int] = 68
 
+    # Speed steps, see https://dcc-ex.com/reference/software/command-summary-consolidated.html#t-cab-speed-dir-set-cab-loco-speed
+    SPEED_STEPS: Final[int] = 126
+
     # Commands
     CMD_LIST_ROSTER_ENTRIES: Final[str] = "JR"
     CMD_GET_ROSTER_DETAILS_FMT: Final[str] = "JR {cab_id}"
@@ -44,6 +47,10 @@ class EXCSLocoDirection(Enum):
 
     REVERSE = 0
     FORWARD = 1
+
+    def __str__(self) -> str:
+        """Return the string representation of the direction."""
+        return "forward" if self == EXCSLocoDirection.FORWARD else "reverse"
 
 
 class EXCSLocoFunctionCmd(Enum):
@@ -99,6 +106,25 @@ class EXCSRosterEntry:
             f"speed={self.speed} "
             f"direction={self.direction.name} "
             f"num_functions={len(self.functions)}>"
+        )
+
+    @property
+    def speed_pct(self) -> int:
+        """Get the current speed as a percentage."""
+        return round((self.speed / EXCSRosterConsts.SPEED_STEPS) * 100)
+
+    def set_speed_pct_cmd(self, speed_pct: float) -> str:
+        """Construct a command to set the locomotive speed using percentage."""
+        # Convert percentage to speed steps (0-126)
+        speed_steps = round((speed_pct / 100.0) * EXCSRosterConsts.SPEED_STEPS)
+        return EXCSRosterConsts.CMD_SET_LOCO_SPEED_FMT.format(
+            cab_id=self.id, speed=speed_steps, direction=self.direction.value
+        )
+
+    def set_direction_cmd(self, direction: EXCSLocoDirection) -> str:
+        """Construct a command to set the locomotive direction."""
+        return EXCSRosterConsts.CMD_SET_LOCO_SPEED_FMT.format(
+            cab_id=self.id, speed=self.speed, direction=direction.value
         )
 
     def toggle_function_cmd(self, function_id: int, state: EXCSLocoFunctionCmd) -> str:

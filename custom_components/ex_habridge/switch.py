@@ -50,18 +50,17 @@ async def async_setup_entry(
         async_add_entities(turnout_switches)
 
     # Add locomotive function switches
-    function_switches = []
+    entities = []
     for loco in client.roster_entries:
         coordinator = coordinators[loco.id]
-        function_switches.extend(
+        entities.extend(
             [
                 LocoFunctionSwitch(client, coordinator, loco, function)
                 for function in loco.functions.values()
             ]
         )
-
-    if function_switches:
-        async_add_entities(function_switches)
+    if entities:
+        async_add_entities(entities)
 
 
 class EXCSSwitchEntity(EXCSEntity, SwitchEntity):
@@ -80,7 +79,7 @@ class EXCSSwitchEntity(EXCSEntity, SwitchEntity):
         )
 
 
-class TracksPowerSwitch(EXCSSwitchEntity, SwitchEntity):
+class TracksPowerSwitch(EXCSSwitchEntity):
     """Representation of the EX-CommandStation tracks power switch."""
 
     def __init__(self, client: EXCSClient) -> None:
@@ -126,7 +125,7 @@ class TracksPowerSwitch(EXCSSwitchEntity, SwitchEntity):
             LOGGER.exception("Failed to turn OFF tracks power")
 
 
-class TurnoutSwitch(EXCSSwitchEntity, SwitchEntity):
+class TurnoutSwitch(EXCSSwitchEntity):
     """Representation of a turnout switch."""
 
     def __init__(self, client: EXCSClient, turnout: EXCSTurnout) -> None:

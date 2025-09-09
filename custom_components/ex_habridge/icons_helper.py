@@ -32,7 +32,7 @@ ICON_KEYWORDS_MAPPING: Final[dict[str, list[str]]] = {
     "music": ["music"],
     "power-plug-outline": ["aux"],
     "smoke": ["smoke", "steam"],
-    "speedometer-slow": ["creep", "slow", "shunt"],
+    "car-speed-limiter": ["creep", "slow", "shunt"],
     "speedometer": ["speed", "acceleration"],
     "town-hall": ["station"],
     "track-light": ["inspection light", "inspection lights"],

@@ -24,10 +24,11 @@ if TYPE_CHECKING:
 
 
 PLATFORMS: list[Platform] = [
-    Platform.BUTTON,
-    Platform.SWITCH,
-    # Platform.SENSOR,
-    # Platform.BINARY_SENSOR,
+    Platform.BUTTON,  # For emergency stop, reboot, routes, automations, etc.
+    Platform.NUMBER,  # For speed control
+    Platform.SELECT,  # For direction control
+    Platform.SENSOR,  # For speed/direction feedback
+    Platform.SWITCH,  # For turnouts, track power, functions, etc.
 ]
 
 
