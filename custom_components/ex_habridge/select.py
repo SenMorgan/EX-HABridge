@@ -8,7 +8,7 @@ from homeassistant.components.select import SelectEntity, SelectEntityDescriptio
 
 from .const import DOMAIN, LOGGER
 from .entity import EXCSRosterEntity
-from .roster import EXCSLocoDirection, EXCSRosterConsts, EXCSRosterEntry
+from .roster import EXCSLocoDirection, EXCSRosterEntry
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry

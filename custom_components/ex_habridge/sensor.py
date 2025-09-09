@@ -11,9 +11,8 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import PERCENTAGE
 
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN
 from .entity import EXCSRosterEntity
-from .roster import EXCSLocoDirection, EXCSRosterEntry
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -22,6 +21,7 @@ if TYPE_CHECKING:
 
     from .coordinator import LocoUpdateCoordinator
     from .excs_client import EXCSClient
+    from .roster import EXCSRosterEntry
 
 
 async def async_setup_entry(
