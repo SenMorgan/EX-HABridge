@@ -4,8 +4,9 @@
 ![GitHub all releases](https://img.shields.io/github/downloads/SenMorgan/EX-HABridge/total?style=flat-square)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SenMorgan/EX-HABridge/validate.yml?style=flat-square)
 
-
 Custom integration that allows [Home Assistant](https://www.home-assistant.io/) to control and monitor an [EX-CommandStation](https://dcc-ex.com/ex-commandstation/index.html) — a simple but powerful DCC/DC command station used for running model train layouts.
+
+<img width="994" height="256" alt="logo" src="https://github.com/user-attachments/assets/56fb0bda-11a1-4ffb-a0a3-ed767d4220e4" />
 
 ## Installation using HACS
 
@@ -17,7 +18,7 @@ To install the EX-HABridge integration using [HACS](https://hacs.xyz/), follow t
 5. Go to **Settings** > **Devices & services** and click on **Add integration**.
 6. Search for ***EX-HABridge*** and follow the prompts to configure the integration.
 
-## ✅ Implemented and Planned Features
+## Implemented and Planned Features
 
 ### Core
 
