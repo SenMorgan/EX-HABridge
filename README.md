@@ -1,11 +1,24 @@
 # EX-HABridge Integration for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
+![GitHub all releases](https://img.shields.io/github/downloads/SenMorgan/EX-HABridge/total?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SenMorgan/EX-HABridge/validate.yml?style=flat-square)
 
 Custom integration that allows [Home Assistant](https://www.home-assistant.io/) to control and monitor an [EX-CommandStation](https://dcc-ex.com/ex-commandstation/index.html) — a simple but powerful DCC/DC command station used for running model train layouts.
 
+<img width="994" height="256" alt="logo" src="https://github.com/user-attachments/assets/56fb0bda-11a1-4ffb-a0a3-ed767d4220e4" />
 
-## ✅ Planned and Implemented Features
+## Installation using HACS
+
+To install the EX-HABridge integration using [HACS](https://hacs.xyz/), follow these steps:
+1. Open Home Assistant and navigate to **HACS**.
+2. Click on search field and type ***EX-HABridge***.
+3. Click the **DOWNLOAD** button to install the integration.
+4. After the download is complete, restart Home Assistant.
+5. Go to **Settings** > **Devices & services** and click on **Add integration**.
+6. Search for ***EX-HABridge*** and follow the prompts to configure the integration.
+
+## Implemented and Planned Features
 
 ### Core
 
@@ -24,24 +37,12 @@ Custom integration that allows [Home Assistant](https://www.home-assistant.io/) 
 - [x] Routes/automations control
 - [ ] Turntable control
 
-### CV Operations
+### Other Features
 
+- [x] Automatic assignment of icons to functions based on their names
 - [x] Write to CV registers via service
 - [ ] Read CV registers via service
 - [ ] Display CV read results
-
-## Installation using HACS
-
-To install the EX-HABridge integration using [HACS](https://hacs.xyz/), follow these steps:
-1. Open Home Assistant and navigate to **HACS**.
-2. Click on 3 dots in the top right corner and select **Custom repositories**.
-3. Fill in the form and click **Add**:
-   - **Repository**: `https://github.com/SenMorgan/EX-HABridge`
-   - **Type**: `Integration`
-4. Once added, go back to **Integrations** in HACS, search for *EX-HABridge*, and click the **DOWNLOAD** button.
-5. After the download is complete, restart Home Assistant.
-6. Go to **Settings** > **Devices & Services** and click on **Add Integration**.
-7. Search for *EX-HABridge* and follow the prompts to configure the integration.
 
 ## Disclaimer
 
