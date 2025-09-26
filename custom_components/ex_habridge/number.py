@@ -69,6 +69,11 @@ class LocoSpeedNumber(EXCSRosterEntity, NumberEntity):
         self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
 
     @property
+    def extra_state_attributes(self) -> dict:
+        """Return the additional state attributes of the number entity."""
+        return {"dcc_id": self._loco.id}
+
+    @property
     def native_value(self) -> float:
         """Return the current speed as a percentage."""
         return self._loco.speed_pct

@@ -144,6 +144,11 @@ class TurnoutSwitch(EXCSSwitchEntity):
         # Assuming THROWN means the switch is on
         self._attr_is_on = turnout.state == EXCSTurnoutState.THROWN
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return the additional state attributes of the switch entity."""
+        return {"dcc_id": self._turnout.id}
+
     @callback
     def _handle_push(self, message: str) -> None:
         """Handle incoming messages from the EX-CommandStation."""
@@ -204,6 +209,11 @@ class LocoFunctionSwitch(EXCSRosterEntity, SwitchEntity):
 
         # Set initial state based on function state
         self._attr_is_on = function.state
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return the additional state attributes of the switch entity."""
+        return {"dcc_id": self._loco.id, "function_id": self._function_id}
 
     @callback
     def _handle_coordinator_update(self) -> None:

@@ -70,9 +70,9 @@ class LocoSpeedSensor(EXCSRosterEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict:
-        """Return the state attributes of the sensor."""
+        """Return the additional state attributes of the sensor entity."""
         return {
+            "dcc_id": self._loco.id,
             "direction": str(self._loco.direction),
-            "loco_id": self._loco.id,
             "description": self._loco.description,
         }
