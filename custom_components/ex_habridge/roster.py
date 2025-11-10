@@ -121,6 +121,14 @@ class EXCSRosterEntry:
             cab_id=self.id, speed=speed_steps, direction=self.direction.value
         )
 
+    def set_speed_step_cmd(self, speed_step: int) -> str:
+        """Construct a command to set the locomotive speed using step value."""
+        # Clamp speed_step to valid range
+        speed_step = max(0, min(EXCSRosterConsts.SPEED_STEPS, speed_step))
+        return EXCSRosterConsts.CMD_SET_LOCO_SPEED_FMT.format(
+            cab_id=self.id, speed=speed_step, direction=self.direction.value
+        )
+
     def set_direction_cmd(self, direction: EXCSLocoDirection) -> str:
         """Construct a command to set the locomotive direction."""
         return EXCSRosterConsts.CMD_SET_LOCO_SPEED_FMT.format(
