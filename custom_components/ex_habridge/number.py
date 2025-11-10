@@ -11,6 +11,8 @@ from homeassistant.components.number import (
 )
 from homeassistant.const import PERCENTAGE
 
+from custom_components.ex_habridge.roster import EXCSRosterConsts
+
 from .const import DOMAIN, LOGGER
 from .entity import EXCSRosterEntity
 
@@ -39,6 +41,7 @@ async def async_setup_entry(
     for loco in client.roster_entries:
         coordinator = coordinators[loco.id]
         entities.append(LocoSpeedNumber(client, coordinator, loco))
+        entities.append(LocoSpeedStepNumber(client, coordinator, loco))
     if entities:
         async_add_entities(entities)
 
@@ -69,6 +72,11 @@ class LocoSpeedNumber(EXCSRosterEntity, NumberEntity):
         self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
 
     @property
+    def extra_state_attributes(self) -> dict:
+        """Return the additional state attributes of the number entity."""
+        return {"dcc_id": self._loco.id}
+
+    @property
     def native_value(self) -> float:
         """Return the current speed as a percentage."""
         return self._loco.speed_pct
@@ -81,4 +89,47 @@ class LocoSpeedNumber(EXCSRosterEntity, NumberEntity):
             # Handle the error if needed
             LOGGER.exception(
                 "Failed to set speed to %.1f%% for loco %d", value, self._loco.id
+            )
+
+
+class LocoSpeedStepNumber(EXCSRosterEntity, NumberEntity):
+    """Representation of a locomotive speed step control."""
+
+    def __init__(
+        self,
+        client: EXCSClient,
+        coordinator: LocoUpdateCoordinator,
+        loco: EXCSRosterEntry,
+    ) -> None:
+        """Initialize the locomotive speed step number entity."""
+        super().__init__(client, coordinator, loco)
+        self._attr_name = "Speed Step"
+        self.entity_description = NumberEntityDescription(
+            key=f"speed_step_{loco.id}",
+            icon="mdi:ray-vertex",
+            native_min_value=0,
+            native_max_value=EXCSRosterConsts.SPEED_STEPS,
+            native_step=1,
+            native_unit_of_measurement="step",
+            mode=NumberMode.AUTO,
+        )
+        self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return the additional state attributes of the number entity."""
+        return {"dcc_id": self._loco.id}
+
+    @property
+    def native_value(self) -> int:
+        """Return the current speed step."""
+        return self._loco.speed
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set the locomotive speed using raw step value."""
+        try:
+            await self._client.send_command(self._loco.set_speed_step_cmd(int(value)))
+        except EXCSError:
+            LOGGER.exception(
+                "Failed to set speed step to %d for loco %d", value, self._loco.id
             )

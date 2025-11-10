@@ -65,6 +65,11 @@ class LocoDirectionSelect(EXCSRosterEntity, SelectEntity):
         self._attr_options = [DIRECTION_FORWARD, DIRECTION_REVERSE]
 
     @property
+    def extra_state_attributes(self) -> dict:
+        """Return the additional state attributes of the select entity."""
+        return {"dcc_id": self._loco.id}
+
+    @property
     def current_option(self) -> str:
         """Return the current direction as a string."""
         return str(self._loco.direction)

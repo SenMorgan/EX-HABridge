@@ -109,6 +109,11 @@ class RouteButton(EXCSButtonEntity):
         )
         self._attr_unique_id = f"{client.entry_id}_{self.entity_description.key}"
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return the additional state attributes of the button entity."""
+        return {"dcc_id": self._route.id}
+
     async def async_press(self) -> None:
         """Send the start command for the route/automation."""
         try:

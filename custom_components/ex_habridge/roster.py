@@ -121,6 +121,14 @@ class EXCSRosterEntry:
             cab_id=self.id, speed=speed_steps, direction=self.direction.value
         )
 
+    def set_speed_step_cmd(self, speed_step: int) -> str:
+        """Construct a command to set the locomotive speed using step value."""
+        # Clamp speed_step to valid range
+        speed_step = max(0, min(EXCSRosterConsts.SPEED_STEPS, speed_step))
+        return EXCSRosterConsts.CMD_SET_LOCO_SPEED_FMT.format(
+            cab_id=self.id, speed=speed_step, direction=self.direction.value
+        )
+
     def set_direction_cmd(self, direction: EXCSLocoDirection) -> str:
         """Construct a command to set the locomotive direction."""
         return EXCSRosterConsts.CMD_SET_LOCO_SPEED_FMT.format(
@@ -158,14 +166,35 @@ class EXCSRosterEntry:
         """
         Parse the speed byte from the throttle response and update variables.
 
+        Docs: https://dcc-ex.com/reference/software/command-summary-consolidated.html#t-cab-speed-dir-set-cab-loco-speed
+
         The speed byte is an 8-bit integer with the following bit structure:
-        - Bit 0: Emergency stop (1 = emergency stop, 0 = normal operation)
-        - Bits 1-6: Speed (0-127)
+        - Bits 0-6: Emergency stop and speed (0-126)
+          - 0 = normal stop
+          - 1 = emergency stop
+          - 2-127 = forward speed (1-126)
+          - 128 = normal stop
+          - 129 = emergency stop
+          - 130-255 = reverse speed (1-126)
         - Bit 7: Direction (0 = reverse, 1 = forward)
         """
-        self.emergency_stop = bool(speed_byte & 0x01)
-        self.speed = speed_byte & 0x7E
-        self.direction = EXCSLocoDirection((speed_byte >> 7) & 1)
+        # Extract direction from bit 7
+        self.direction = EXCSLocoDirection((speed_byte & 0x80) != 0)
+
+        # Determine if emergency stop is active (speed_byte 1 or 129)
+        self.emergency_stop = bool(speed_byte in {1, 129})
+
+        # If emergency stop is active, set speed to 0 and skip further processing
+        if self.emergency_stop:
+            self.speed = 0
+            return
+
+        # Extract and calculate speed from bits 0-6
+        raw_speed_value = speed_byte & 0x7F  # Mask to get bits 0-6
+        if raw_speed_value == 0:
+            self.speed = 0  # Normal stop
+        else:
+            self.speed = raw_speed_value - 1  # Adjust to 1-126 range
 
     def process_throttle_response(self, message: str) -> None:
         """Update the roster entry from a throttle response."""
