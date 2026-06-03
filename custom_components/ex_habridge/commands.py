@@ -14,7 +14,7 @@ RESP_EXCS_SYS_INFO_REGEX: Final[re.Pattern] = re.compile(
     r"iDCC-EX\s+V-(?P<version>\d+\.\d+\.\d+)\s+/\s+"
     r"(?P<microprocessor>[^/]+)\s+/\s+"
     r"(?P<motor_controller>[^ ]+)\s+"
-    r"(?P<build_number>G-[a-f0-9]+)"
+    r"(?P<build_number>G-[^\s>]+)"
 )
 
 # Command and response constants
