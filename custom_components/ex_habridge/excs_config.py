@@ -152,10 +152,12 @@ class EXCSConfigClient(EXCSBaseClient):
             self.system_info.build_number = match.group("build_number") or "unknown"
 
             LOGGER.info(
-                "EX-CommandStation version: %s, processor: %s, motor controller: %s",
+                "EX-CommandStation parsed data: version: %s, processor: %s, "
+                "motor controller: %s, build: %s",
                 self.system_info.version,
                 self.system_info.processor_type,
                 self.system_info.motor_controller,
+                self.system_info.build_number,
             )
         else:
             msg = f"Invalid response from EX-CommandStation on system info: {response}"
