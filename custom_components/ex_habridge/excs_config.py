@@ -22,6 +22,7 @@ from .excs_exceptions import (
 )
 from .roster_manager import EXCSRosterManager
 from .routes_manager import EXCSRoutesManager
+from .sensors_manager import EXCSSensorsManager
 from .turnouts_manager import EXCSTurnoutsManager
 
 if TYPE_CHECKING:
@@ -61,6 +62,7 @@ class EXCSConfigClient(EXCSBaseClient):
         self.roster_manager = EXCSRosterManager(self)
         self.routes_manager = EXCSRoutesManager(self)
         self.turnouts_manager = EXCSTurnoutsManager(self)
+        self.sensors_manager = EXCSSensorsManager(self)
         self.initial_tracks_state: bool = False
 
     @property
@@ -78,6 +80,11 @@ class EXCSConfigClient(EXCSBaseClient):
         """Return the list of turnouts."""
         return self.turnouts_manager.turnouts
 
+    @property
+    def sensors(self):
+        """Return the list of DCC sensors."""
+        return self.sensors_manager.sensors
+
     @classmethod
     def parse_version(cls, version_str: str) -> tuple[int, ...]:
         """Parse a version string into a tuple of integers."""
@@ -94,6 +101,10 @@ class EXCSConfigClient(EXCSBaseClient):
     async def get_turnouts(self) -> None:
         """Request the list of turnouts from the EX-CommandStation."""
         await self.turnouts_manager.get_turnouts()
+
+    async def get_sensors(self) -> None:
+        """Request the list of DCC sensors from the EX-CommandStation."""
+        await self.sensors_manager.get_sensors()
 
     async def _create_initial_tracks_state_handler(self) -> None:
         """Create a one-time signal handler for the initial tracks state."""

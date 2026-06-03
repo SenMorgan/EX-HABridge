@@ -41,6 +41,11 @@ class EXCSClient(EXCSConfigClient):
         await self.get_routes()
         # Fetch the list of turnouts
         await self.get_turnouts()
+        # Discover DCC sensors — non-fatal if the CommandStation has none defined
+        try:
+            await self.get_sensors()
+        except EXCSError:
+            LOGGER.warning("DCC sensor discovery skipped")
 
     async def async_shutdown(self) -> None:
         """Shutdown the EX-CommandStation client."""

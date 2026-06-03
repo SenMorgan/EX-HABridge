@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 
 PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,  # For DCC input sensors
     Platform.BUTTON,  # For emergency stop, reboot, routes, automations, etc.
     Platform.NUMBER,  # For speed control
     Platform.SELECT,  # For direction control
